@@ -28,7 +28,7 @@ def import_products_from_yaml(file_path, supplier_id):
             }
         )
 
-        # Добавляем характеристики
+        # Характеристики
         if 'characteristics' in item:
             for name, value in item['characteristics'].items():
                 ProductCharacteristic.objects.update_or_create(
