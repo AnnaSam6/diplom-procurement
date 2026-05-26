@@ -61,12 +61,11 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def change_status(self, request, pk=None):
-        """Изменить статус заказа"""
         order = self.get_object()
 
-        new_status = request.data.get('status')
-
         allowed_statuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled']
+
+        new_status = request.data.get('status')
 
         if new_status not in allowed_statuses:
             return Response(
@@ -80,8 +79,12 @@ class OrderViewSet(viewsets.ModelViewSet):
         return Response(OrderSerializer(order).data)
 
     @action(detail=False, methods=['get'])
+    def my_orders(self, request):
+        orders = Order.objects.filter(user=request.user).prefetch_related('items')
+        return Response(OrderSerializer(orders, many=True).data)
+
+    @action(detail=False, methods=['get'])
     def supplier_orders(self, request):
-        """Список заказов для поставщика"""
         if not request.user.is_supplier:
             return Response({'error': 'Только для поставщиков'}, status=status.HTTP_403_FORBIDDEN)
 
@@ -93,7 +96,6 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'])
     def toggle_accepting(self, request):
-        """Включить/отключить приём заказов"""
         if not request.user.is_supplier:
             return Response({'error': 'Только для поставщиков'}, status=status.HTTP_403_FORBIDDEN)
 
@@ -102,9 +104,3 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         status_text = 'принимает' if request.user.is_active else 'не принимает'
         return Response({'message': f'Поставщик теперь {status_text} заказы'})
-
-    @action(detail=False, methods=['get'])
-    def my_orders(self, request):
-        """Список заказов текущего пользователя"""
-        orders = Order.objects.filter(user=request.user).prefetch_related('items')
-        return Response(OrderSerializer(orders, many=True).data)
