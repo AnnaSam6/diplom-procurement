@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 
+
 class Address(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     city = models.CharField(max_length=100, verbose_name='Город')
@@ -15,7 +16,10 @@ class Order(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Ожидает'),
         ('confirmed', 'Подтверждён'),
+        ('processing', 'В обработке'),
+        ('shipped', 'Отправлен'),
         ('delivered', 'Доставлен'),
+        ('cancelled', 'Отменен'),
     ]
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     address = models.ForeignKey(Address, on_delete=models.PROTECT)
